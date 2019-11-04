@@ -69,11 +69,12 @@ stages:
 
     - upload: $(Build.ArtifactStagingDirectory)
       artifact: drop
+
 - stage: Deploy
   displayName: Deploy stage
-   dependsOn:
-   - Build_1
-   - Build_2
+  dependsOn:
+  - Build_1
+  - Build_2
   condition: succeeded()
   jobs:
   - deployment: DeployLinuxWebApp
