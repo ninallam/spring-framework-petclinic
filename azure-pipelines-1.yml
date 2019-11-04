@@ -33,7 +33,7 @@ stages:
     - task: Maven@3
       displayName: 'Maven Package'
       inputs:
-        mavenPomFile: 'pom.xml'
+        mavenPomFile: '.\test\pom.xml'
 
     - task: CopyFiles@2
       displayName: 'Copy Files to artifact staging directory'
@@ -69,6 +69,8 @@ stages:
 
     - upload: $(Build.ArtifactStagingDirectory)
       artifact: drop
+
+    - powershell: Write-Error "Something failed"
 
 - stage: Deploy
   displayName: Deploy stage
