@@ -1,0 +1,98 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+- master
+
+variables:
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: MavenPackageAndPublishArtifacts
+    displayName: Maven Package and Publish Artifacts
+    pool:
+      vmImage: $(vmImageName)
+    
+    steps:
+    - task: Maven@3
+      displayName: 'Maven Package'
+      inputs:
+        mavenPomFile: 'pom.xml'
+
+    - task: CopyFiles@2
+      displayName: 'Copy Files to artifact staging directory'
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: '**/target/*.?(war|jar)'
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+
+    - upload: $(Build.ArtifactStagingDirectory)
+      artifact: drop
+
+- stage: Deploy
+  displayName: Deploy stage
+  jobs:  
+  - deployment: VMDeploy
+    displayName: web
+    pool: demopool
+    environment:
+      name: VM Environment
+      resourceType: VirtualMachine
+    strategy:
+      rolling:
+        maxParallel: 2
+        preDeploy:
+          steps:
+            - download: build
+              artifact: drop
+            - script: echo Hello, world! This is pre-deploy
+              displayName: 'Run a one-line script'
+        deploy:
+          steps:
+          - task: IISWebAppManagementOnMachineGroup@0
+            displayName: 'Create Website'
+            inputs:
+              WebsiteName: 'Default Web Site'
+              AddBinding: True
+              Bindings: '{"bindings":[{"protocol":"http","ipAddress":"All Unassigned","port":"80","hostname":"","sslThumbprint":"","sniFlag":false}]}'
+              ParentWebsiteNameForVD: 'Default Web Site'
+              ParentWebsiteNameForApplication: 'Default Web Site'
+          - task: IISWebAppDeploymentOnMachineGroup@0
+            displayName: 'Deploy application to Website'
+            inputs:
+              WebSiteName: 'Default Web Site'
+              Package: '$(System.DefaultWorkingDirectory)/_ninallam.spring-framework-petclinic (2)/drop'
+              TakeAppOfflineFlag: true
+              XmlVariableSubstitution: true
+
+        routeTraffic:
+          steps:
+            - download: build
+              artifact: drop
+            - script: echo Hello, world! This is routeTraffic
+              displayName: 'Run a one-line script'
+
+        postRouteTraffic:
+          steps:
+            - download: none
+            - script: echo Hello, world! This is postRouteTraffic
+              displayName: 'Run a one-line script'
+
+        on:
+          failure:
+            steps:
+            - download: none
+            - script: echo Hello, world! This is on failure
+              displayName: 'Run a one-line script'
+
+          success:
+            steps:
+            - download: none
+            - script: echo Hello, world! This is on success
+              displayName: 'Run a one-line script' 
