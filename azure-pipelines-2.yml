@@ -49,8 +49,6 @@ stages:
         maxParallel: 2
         preDeploy:
           steps:
-            - download: build
-              artifact: drop
             - script: echo Hello, world! This is pre-deploy
               displayName: 'Run a one-line script'
         deploy:
@@ -67,7 +65,7 @@ stages:
             displayName: 'Deploy application to Website'
             inputs:
               WebSiteName: 'Default Web Site'
-              Package: '$(System.DefaultWorkingDirectory)/_ninallam.spring-framework-petclinic (2)/drop'
+              Package: '$(System.DefaultWorkingDirectory)/_ninallam.spring-framework-petclinic (1)/drop'
               TakeAppOfflineFlag: true
               XmlVariableSubstitution: true
 
