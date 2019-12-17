@@ -73,7 +73,7 @@ stages:
 
         routeTraffic:
           steps:
-            - download: build
+            - download: current
               artifact: drop
             - script: echo Hello, world! This is routeTraffic
               displayName: 'Run a one-line script'
