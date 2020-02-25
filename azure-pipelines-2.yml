@@ -35,7 +35,6 @@ stages:
     - upload: $(Build.ArtifactStagingDirectory)
       artifact: drop
 
-steps:
 - task: AzureFileCopy@4
   displayName: 'AzureBlob File Copy'
   inputs:
