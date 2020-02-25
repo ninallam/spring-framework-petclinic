@@ -34,12 +34,11 @@ stages:
 
     - upload: $(Build.ArtifactStagingDirectory)
       artifact: drop
-
-- task: AzureFileCopy@4
-  displayName: 'AzureBlob File Copy'
-  inputs:
-    SourcePath: '$(System.DefaultWorkingDirectory)/_ninallam.spring-framework-petclinic'
-    azureSubscription: RMPM
-    Destination: AzureBlob
-    storage: nikstorageaccount
-    ContainerName: nikitacontainer
+    - task: AzureFileCopy@4
+      displayName: 'AzureBlob File Copy'
+      inputs:
+        SourcePath: '$(System.DefaultWorkingDirectory)/_ninallam.spring-framework-petclinic'
+        azureSubscription: RMPM
+        Destination: AzureBlob
+        storage: nikstorageaccount
+        ContainerName: nikitacontainer
