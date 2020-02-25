@@ -35,64 +35,12 @@ stages:
     - upload: $(Build.ArtifactStagingDirectory)
       artifact: drop
 
-- stage: Deploy
-  displayName: Deploy stage
-  jobs:  
-  - deployment: VMDeploy
-    displayName: web
-    pool: demopool
-    environment:
-      name: VM Environment
-      resourceType: VirtualMachine
-    strategy:
-      rolling:
-        maxParallel: 5
-        preDeploy:
-          steps:
-            - download: current
-              artifact: drop
-            - script: echo Hello, world! This is pre-deploy
-              displayName: 'Run a one-line script'
-        deploy:
-          steps:
-          - task: IISWebAppManagementOnMachineGroup@0
-            displayName: 'Create Website'
-            inputs:
-              WebsiteName: 'Default Web Site'
-              AddBinding: True
-              Bindings: '{"bindings":[{"protocol":"http","ipAddress":"All Unassigned","port":"80","hostname":"","sslThumbprint":"","sniFlag":false}]}'
-              ParentWebsiteNameForVD: 'Default Web Site'
-              ParentWebsiteNameForApplication: 'Default Web Site'
-          - task: IISWebAppDeploymentOnMachineGroup@0
-            displayName: 'Deploy application to Website'
-            inputs:
-              WebSiteName: 'Default Web Site'
-              Package: '$(Pipeline.Workspace)/drop/**/*.?(war|jar)'
-              TakeAppOfflineFlag: true
-              XmlVariableSubstitution: true
-
-        routeTraffic:
-          steps:
-            - download: current
-              artifact: drop
-            - script: echo Hello, world! This is routeTraffic
-              displayName: 'Run a one-line script'
-
-        postRouteTraffic:
-          steps:
-            - download: none
-            - script: echo Hello, world! This is postRouteTraffic
-              displayName: 'Run a one-line script'
-
-        on:
-          failure:
-            steps:
-            - download: none
-            - script: echo Hello, world! This is on failure
-              displayName: 'Run a one-line script'
-
-          success:
-            steps:
-            - download: none
-            - script: echo Hello, world! This is on success
-              displayName: 'Run a one-line script' 
+steps:
+- task: AzureFileCopy@4
+  displayName: 'AzureBlob File Copy'
+  inputs:
+    SourcePath: '$(System.DefaultWorkingDirectory)/_ninallam.spring-framework-petclinic'
+    azureSubscription: RMPM
+    Destination: AzureBlob
+    storage: nikstorageaccount
+    ContainerName: nikitacontainer
